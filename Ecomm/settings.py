@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'category',
     'store',
     'cart',
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -63,6 +64,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Ecomm.wsgi.application'
+AUTH_USER_MODEL = 'accounts.Account'
 
 
 # Database
