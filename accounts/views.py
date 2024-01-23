@@ -2,7 +2,8 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from .forms import RegistrationForm
 from .models import Account
-from django.contrib import messages
+from django.contrib import messages, auth
+from django.contrib.auth.decorators import login_required
 
 def register(request):
 
@@ -38,4 +39,24 @@ def register(request):
     return render(request, 'account/register.html', context)
 
 def login(request):
-    return HttpResponse('Login')
+    if request.method == 'POST':
+        email = request.POST['email']
+        password = request.POST['password']
+        user = auth.authenticate(email=email, password=password)
+
+        if user is not None:
+            auth.login(request, user)
+            messages.success(request, 'You are now logged in!')
+            return redirect('home')
+        else:
+            messages.error(request, 'Invalid login Credentials')
+        return redirect('login')
+    
+    return render(request, 'account/login.html')
+
+@login_required(login_url='login')
+def logout(request):
+    auth.logout(request)
+    messages.success(request, 'Your are now logged out!')
+
+    return redirect('login')
