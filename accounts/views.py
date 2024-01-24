@@ -71,7 +71,7 @@ def login(request):
         if user is not None:
             auth.login(request, user)
             messages.success(request, 'You are now logged in!')
-            return redirect('home')
+            return redirect('dashboard')
         else:
             messages.error(request, 'Invalid login Credentials')
         return redirect('login')
@@ -88,3 +88,7 @@ def logout(request):
 
 def activate(request, uidb64, token):
     return HttpResponse("ok")
+
+@login_required(login_url='login')
+def dashboard(request):
+    return render(request, 'account/dashboard.html')
