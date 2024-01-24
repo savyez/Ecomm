@@ -48,7 +48,8 @@ def register(request):
                 'token': default_token_generator.make_token(user),
             })
             to_email = email
-            send_email = EmailMessage(mail_subject, message, to=[to_email])
+            from_email = settings.EMAIL_HOST_USER
+            send_email = EmailMessage(mail_subject, message,from_email, to=[to_email])
             send_email.send()
 
             messages.success(request, 'Registration Successful')
@@ -85,5 +86,5 @@ def logout(request):
     return redirect('login')
 
 
-def activate(request, uidb, token):
+def activate(request, uidb64, token):
     return HttpResponse("ok")
