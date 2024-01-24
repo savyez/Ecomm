@@ -52,9 +52,7 @@ def register(request):
             send_email = EmailMessage(mail_subject, message,from_email, to=[to_email])
             send_email.send()
 
-            messages.success(request, 'Registration Successful')
-            return redirect('register')
-
+            return redirect('/accounts/login/?command=verification&email='+email)
     else:
         form = RegistrationForm()
     context = {
@@ -87,7 +85,20 @@ def logout(request):
 
 
 def activate(request, uidb64, token):
-    return HttpResponse("OK")
+    try: 
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = Account._default_manager.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, Account.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, "Congratulations your account is now active!")
+        return redirect('login')
+    else:
+        messages.error(request, "Invalid Activation Link")
+        return redirect('register')
 
 @login_required(login_url='login')
 def dashboard(request):
