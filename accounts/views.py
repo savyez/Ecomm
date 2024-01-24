@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 # packages for email verification
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
-from django.utils.http import urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
@@ -87,8 +87,42 @@ def logout(request):
 
 
 def activate(request, uidb64, token):
-    return HttpResponse("ok")
+    return HttpResponse("OK")
 
 @login_required(login_url='login')
 def dashboard(request):
     return render(request, 'account/dashboard.html')
+
+
+def forgotPassword(request):
+    if request.method == 'POST':
+        email = request.POST['email']
+        if Account.objects.filter(email=email).exists():
+            user = Account.objects.get(email__exact=email)
+
+            # reset password mail
+            current_site = get_current_site(request)
+            mail_subject = "CLICK ON THIS LINK TO RESET YOUR PASSWORD"
+            message = render_to_string('account/reset_password_email.html', {
+                'user':user,
+                'domain':current_site,
+                'uid':urlsafe_base64_encode(force_bytes(user.id)),
+                'token': default_token_generator.make_token(user),
+            })
+            to_email = email
+            from_email = settings.EMAIL_HOST_USER
+            send_email = EmailMessage(mail_subject, message,from_email, to=[to_email])
+            send_email.send()
+
+            messages.success(request, 'Password Reset has been Link Sent to Email')
+            return redirect('login')
+
+        else:
+            messages.error(request, "Account does not exist")
+            return redirect('forgotPassword')
+    else:
+        return render(request, 'account/forgotPassword.html')
+    
+
+def resetpassword_validate(request, uidb64, token):
+    return HttpResponse("Done!")
