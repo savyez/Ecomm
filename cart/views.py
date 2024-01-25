@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from store.models import Product
 from .models import Cart, CartItem
@@ -11,6 +12,11 @@ def _cart_id(request):
     return cart
 
 def add_cart(request, product_id):
+    color = request.GET['color']
+    size = request.GET['size']
+    return HttpResponse(color + size)
+
+    exit()
     product = Product.objects.get(id=product_id)
     try:
         cart = Cart.objects.get(cart_id=_cart_id(request))
